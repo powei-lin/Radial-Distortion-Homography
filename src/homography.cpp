@@ -5,6 +5,7 @@
 
 #include <Eigen/Core>
 #include <opencv2/core.hpp>
+#include <opencv2/calib3d.hpp>
 
 #include <apriltags/TagDetector.h>
 #include <apriltags/Tag36h11.h>
@@ -13,6 +14,10 @@
 
 using namespace std;
 using namespace cv;
+
+void test_elimination(){
+
+}
 
 int main() {
   vector<string> file_names;
@@ -67,8 +72,30 @@ int main() {
     // cout << p2d.size() << endl;
     // cv::resize(imageCopy, imageCopy, Size(), 2.0, 2.0);
     imshow("april grid", imageCopy);
-    waitKey(0);
+    waitKey(1);
   }
+
+  vector<Point2f> xy0, xy1;
+  vector<uint16_t> ids = {8, 46, 66, 72, 136};
+  for(const auto &id:ids){
+    xy0.push_back(pts_in_frame[0][id]);
+    xy1.push_back(pts_in_frame[1][id]);
+  }
+
+  Mat mask;
+  Mat H = findHomography(xy0, xy1, mask);
+
+  Mat im_in = imread(file_names[0], IMREAD_GRAYSCALE);
+  Mat im_in1 = imread(file_names[1], IMREAD_GRAYSCALE);
+  Mat im_out, im_out1;
+
+  warpPerspective(im_in, im_out, H, im_in.size());
+  imshow("out0", im_out);
+  imshow("out1", im_in1);
+  addWeighted(im_out, 0.5, im_in1, 0.5, 0, im_out1);
+  imshow("out2", im_out1);
+  imshow("mask", mask);
+  waitKey(0);
 
   return 0;
 }
