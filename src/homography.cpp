@@ -18,9 +18,15 @@
 using namespace std;
 using namespace cv;
 
+template<typename Scalar>
+Scalar random(Scalar lower_bound, Scalar upper_bound){
+  return lower_bound + 1.0*(upper_bound - lower_bound) * rand() / RAND_MAX;
+}
+
 void test_elimination() {}
 
 int main() {
+
   vector<string> file_names;
   glob("../data/*.png", file_names);
 
@@ -98,21 +104,10 @@ int main() {
   }
   // waitKey(0);
 
-  Mat mask;
-  Mat H = findHomography(xy0, xy1, mask);
+  const Mat im_in = imread(file_names[0], IMREAD_GRAYSCALE);
+  const Mat im_in1 = imread(file_names[1], IMREAD_GRAYSCALE);
 
-  Mat im_in = imread(file_names[0], IMREAD_GRAYSCALE);
-  Mat im_in1 = imread(file_names[1], IMREAD_GRAYSCALE);
-  // Mat im_out, im_out1;
-
-  // warpPerspective(im_in, im_out, H, im_in.size());
-  // imshow("out0", im_out);
-  // imshow("out1", im_in1);
-  // addWeighted(im_out, 0.5, im_in1, 0.5, 0, im_out1);
-  // imshow("out2", im_out1);
-  // imshow("mask", mask);
-  // waitKey(0);
-
+  // test project points
   vector<vector<Point3f>> p3ds = {xyz, xyz};
   vector<vector<Point2f>> p2ds = {xy0, xy1};
   auto flag = cv::fisheye::CALIB_RECOMPUTE_EXTRINSIC;
@@ -141,7 +136,41 @@ int main() {
     cv::circle(img0show, pt, 5, Scalar(255, 0, 0), 2);
   }
   imshow("project points", img0show);
-  waitKey(0);
+  // waitKey(0);
+
+
+  {
+    Mat mask;
+    Mat H = findHomography(xy0, xy1, mask);
+
+    Mat img0color, img1color;
+    cvtColor(im_in, img0color, COLOR_GRAY2BGR);
+    cvtColor(im_in1, img1color, COLOR_GRAY2BGR);
+
+    // Mat im_out, im_out1;
+
+    // warpPerspective(im_in, im_out, H, im_in.size());
+    // imshow("out0", im_out);
+    // imshow("out1", im_in1);
+    // addWeighted(im_out, 0.5, im_in1, 0.5, 0, im_out1);
+    // imshow("out2", im_out1);
+    // imshow("mask", mask);
+    // waitKey(0);
+
+    for(size_t p = 0 ; p < xy0.size(); p++){
+      Scalar color(rand()%256, rand()%256, rand()%256);
+      // cout << color << endl;
+      cv::circle(img0color, xy0[p], 5, color, -1);
+      cv::circle(img1color, xy1[p], 5, color, -1);
+      
+    }
+    imshow("img0", img0color);
+    imshow("img1", img1color);
+    cv::waitKey(0);
+
+  }
+
+
 
   return 0;
 }
