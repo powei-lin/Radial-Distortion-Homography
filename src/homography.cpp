@@ -77,7 +77,7 @@ int main() {
     Mat imageCopy2;
     cv::resize(imageCopy, imageCopy2, Size(), 2.0, 2.0);
     imshow("april grid", imageCopy2);
-    waitKey(0);
+    waitKey(1);
   }
 
   vector<Point2f> xy0, xy1;
@@ -96,7 +96,7 @@ int main() {
     xyz.emplace_back(pt3d[0], pt3d[1], pt3d[2]);
     cout << id << xyz.back() << endl;
   }
-  waitKey(0);
+  // waitKey(0);
 
   Mat mask;
   Mat H = findHomography(xy0, xy1, mask);
@@ -123,19 +123,22 @@ int main() {
   cout << "K:\n" << K << endl << endl;
   cout << "D:\n" << D << endl << endl;
   cout << rvecs[0] << tvecs[0] << endl;
-  const double alpha = *K.ptr<double>(0, 1);
+
+  const double fx = *K.ptr<double>(0, 0);
+  const double alpha_fx = *K.ptr<double>(0, 1);
+  const double alpha = alpha_fx/fx;
 
   // validate after calibration
   vector<Point2f> out_p2f;
-  fisheye::projectPoints(xyz, out_p2f, rvecs[0], tvecs[0], K, D);
+  fisheye::projectPoints(xyz, out_p2f, rvecs[0], tvecs[0], K, D, alpha);
   Mat img0show;
 
   cvtColor(im_in, img0show, COLOR_GRAY2BGR);
   for (const auto &pt : xy0) {
-    cv::circle(img0show, pt, 10, Scalar(0, 255, 0), 2);
+    cv::circle(img0show, pt, 2, Scalar(0, 0, 255), -1);
   }
   for (const auto &pt : out_p2f) {
-    cv::circle(img0show, pt, 10, Scalar(255, 0, 0), 2);
+    cv::circle(img0show, pt, 5, Scalar(255, 0, 0), 2);
   }
   imshow("project points", img0show);
   waitKey(0);
