@@ -23,7 +23,22 @@ Scalar random(Scalar lower_bound, Scalar upper_bound){
   return lower_bound + 1.0*(upper_bound - lower_bound) * rand() / RAND_MAX;
 }
 
-void test_elimination() {}
+// struct fisheyeProject{
+//   fisheyeProject(){}
+  
+//   template <typename T>
+//   bool operator()(const T *const parameters, const T *const parameter2,
+//                   T *residuals) const {
+//     const T &x = parameters[0];
+//     const T &y = parameters[1];
+//     const T &z = parameters[2];
+//     residuals[0] = x + 2. * y + 4. * z;
+//     residuals[1] = y * z;
+//     residuals[2] = x - T(10);
+//     residuals[4] = parameter2[0];
+//     return true;
+//   }
+// };
 
 int main() {
 
@@ -157,7 +172,7 @@ int main() {
     // imshow("mask", mask);
     // waitKey(0);
 
-    for(size_t p = 0 ; p < xy0.size(); p++){
+    for(size_t p = 0 ; p < 6; p++){
       Scalar color(rand()%256, rand()%256, rand()%256);
       // cout << color << endl;
       cv::circle(img0color, xy0[p], 5, color, -1);
@@ -166,9 +181,39 @@ int main() {
     }
     imshow("img0", img0color);
     imshow("img1", img1color);
-    cv::waitKey(0);
+    // cv::waitKey(0);
 
   }
+
+  // solve H
+  {
+    const double cx = im_in.size().width /2.0-0.5;
+    const double cy = im_in.size().height /2.0-0.5;
+    vector<pair<Eigen::Vector2d, Eigen::Vector2d>> point_pair(6);
+    for(int p = 0 ; p < 6 ; p++){
+      Eigen::Vector2d p0(xy0[p].x-cx, xy0[p].y-cy);
+      Eigen::Vector2d p1(xy1[p].x-cx, xy1[p].y-cy);
+      // cout << p0.x() << ", " << p0.y() << endl;
+      // cout << p1.x() << ", " << p1.y() << endl << endl;
+      point_pair[p] = make_pair(p0, p1);
+    }
+    // v = [h11, h12, h13, h21, h22, h23, lh13, lh23]
+    Eigen::MatrixXd M(6, 8);
+    for(int r = 0; r < 6; r++){
+      const double x = point_pair[r].first.x();
+      const double y = point_pair[r].first.y();
+      const double x_p = point_pair[r].second.x();
+      const double y_p = point_pair[r].second.y();
+      M.row(r)(0) = -1.0*y_p*x;
+      M.row(r)(1) = -1.0*y_p*y;
+    }
+    cout << M << endl;
+    // cout << cx << endl;
+    //  Eigen::Vector3d 
+
+  }
+
+  
 
 
 
