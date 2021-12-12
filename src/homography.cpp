@@ -152,7 +152,7 @@ int main() {
     cv::circle(img0show, pt, 5, Scalar(255, 0, 0), 2);
   }
   imshow("project points", img0show);
-  // waitKey(0);
+  waitKey(0);
 
   {
     Mat mask;
@@ -231,9 +231,39 @@ int main() {
     cout << a << endl;
     cout << "gamma0: " << g0 << ", lambda0: " << lambda0 << endl;
     cout << "gamma1: " << g1 << ", lambda1: " << lambda1 << endl;
-    Eigen::Matrix<double, 1, 8> vector_v = g0 * M_n.row(0) + M_n.row(1);
-    cout << "vector_v:\n" << vector_v << endl << endl;
-    cout << vector_v(0, 2)*lambda0 << " " << vector_v(0, 6) << endl;
+
+    // cout << "vector_v:\n" << vector_v << endl << endl;
+    // cout << vector_v(0, 2)*lambda0 << " " << vector_v(0, 6) << endl;
+
+    Eigen::Matrix<double, 1, 8> vector_v = g1 * M_n.row(0) + M_n.row(1);
+    const double h11 = vector_v(0, 0);
+    const double h12 = vector_v(0, 1);
+    const double h13 = vector_v(0, 2);
+    const double h21 = vector_v(0, 3);
+    const double h22 = vector_v(0, 4);
+    const double h23 = vector_v(0, 5);
+    const double l = lambda1;
+
+    Eigen::MatrixXd A(6, 4);
+    Eigen::MatrixXd b_v(6, 1);
+    for (int r = 0; r < 6; r++) {
+      const double x = point_pair[r].first.x();
+      const double y = point_pair[r].first.y();
+      const double x_p = point_pair[r].second.x();
+      const double y_p = point_pair[r].second.y();
+      A.row(r)(0) = h11*x*x_p*x_p + h11*x*y_p*y_p + h12*x_p*x_p*y + h12*y*y_p*y_p + h13*l*x*x*x_p*x_p + h13*l*x*x*y_p*y_p + h13*l*x_p*x_p*y*y + h13*l*y*y*y_p*y_p + h13*x_p*x_p + h13*y_p*y_p;
+      A.row(r)(1) = -x*x_p;
+      A.row(r)(2) = -x_p*y;
+      A.row(r)(3) = -l*x*x*x_p - l*x_p*y*y - x_p;
+      b_v(r, 0) = -h11*x - h12*y - h13*l*x*x - h13*l*y*y - h13;
+    }
+    cout << A << endl;
+    cout << b_v << endl;
+    const auto result = A.bdcSvd(Eigen::ComputeThinU | Eigen::ComputeThinV).solve(b_v);
+    cout << result << endl;
+
+        
+
     // cout << cx << endl;
     //  Eigen::Vector3d
   }

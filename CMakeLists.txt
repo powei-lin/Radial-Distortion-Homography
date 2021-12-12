@@ -32,6 +32,13 @@ target_link_libraries(homography
     Eigen3::Eigen 
     apriltags)
 
+add_executable(test_eigen ${PROJECT_SOURCE_DIR}/src/test_eigen.cpp)
+target_link_libraries(test_eigen 
+    ${OpenCV_LIBS} 
+    ${CERES_LIBRARIES} 
+    Eigen3::Eigen 
+    apriltags)
+
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})
 set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
 include(CPack)
